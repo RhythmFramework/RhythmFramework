@@ -1,0 +1,10 @@
+bin/
+obj/
+bin/
+FodyWeavers.xsd
+/.vs/
+/.idea/
+/.vscode/
+/.vscode
+.vscode/settings.json
+RhythmFramework.sln.DotSettings.user

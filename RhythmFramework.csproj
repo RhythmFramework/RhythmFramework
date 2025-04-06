@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>RhythmFramework</AssemblyName>
+    <Product>Framework for RD</Product>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+      https://nuget.samboy.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+    <RootNamespace>RhythmFramework</RootNamespace>
+    <nullable>enable</nullable>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/RhythmFramework/RhythmFramework</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Rhythm Doctor Directory here -->
+    <RhythmDoctor>D:\Games\Other\Rhythm Doctor\Game</RhythmDoctor>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.692" />
+	  <PackageReference Include="UnityEngine.Modules" Version="6000.0.5" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <None Include="LICENSE" Pack="true" PackagePath="" />
+      <None Include="README.md">
+          <Pack>True</Pack>
+          <PackagePath>\</PackagePath>
+      </None>
+  </ItemGroup>
+
+    <!-- Automatically include all DLL files in the Managed directory -->
+  <ItemGroup>
+    <ManagedDlls Include="$(RhythmDoctor)/Rhythm Doctor_Data/Managed/*.dll" />
+    <Reference Include="@(ManagedDlls)">
+      <HintPath>%(ManagedDlls.Identity)</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\Modules\" />
+  </ItemGroup>
+
+  <Target Name="Copy" AfterTargets="Build" Condition="'$(RhythmDoctor)' != ''">
+    <CreateItem Include="$(TargetDir)\*.dll" Exclude="$(TargetPath)">
+		<Output TaskParameter="Include" ItemName="DEPSD" />
+    </CreateItem>
+    
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RhythmDoctor)/BepInEx/plugins/" UseSymboliclinksIfPossible="true"></Copy>
+    <Move SourceFiles="@(DEPSD)" DestinationFolder="$(TargetDir)\depends\" OverwriteReadOnlyFiles="true" />
+	</Target>
+
+</Project>
