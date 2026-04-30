@@ -29,7 +29,8 @@ internal static class PauseMenuContentDataPatch
     {
         if (__instance.valueType != CustomName) return true;
         RDBypasses.BypassPrivateVariable(typeof(PauseMenuContentData), "changedValueUsingShift").SetValue(__instance, shiftPressed);
-        int newIndex = EnforceIndexConstraint(__instance.currentIndex + direction, __instance.stringSelectablesValue.Length);
+        CustomPauseContentData data = (CustomPauseContentData)__instance;
+        int newIndex =  data.BaseOption.SetValue((data.BaseOption.Index ?? data.BaseOption.DefaultIndex) + direction);
         __instance.changedValue = __instance.currentIndex != newIndex;
         __instance.currentIndex = newIndex;
         __result = __instance.stringSelectablesValue[newIndex];
@@ -39,18 +40,11 @@ internal static class PauseMenuContentDataPatch
     public static bool SetStartValuePatch(PauseMenuContentData __instance, object value, ref string __result)
     {
         if (__instance.valueType != CustomName) return true;
-        int newIndex = EnforceIndexConstraint((int)value, __instance.stringSelectablesValue.Length);
+        CustomPauseContentData data =  (CustomPauseContentData)__instance;
+        // data.BaseOption.SetValue((int)value);
+        int newIndex = data.BaseOption.Index ?? data.BaseOption.DefaultIndex;
         __instance.currentIndex = newIndex;
         __result = __instance.stringSelectablesValue[newIndex];
         return false; 
-    }
-    
-    private static int EnforceIndexConstraint(int index, int listLength)
-    {
-        if (index >= listLength)
-            return 0;
-        if (index < 0)
-            return listLength - 1;
-        return index;
     }
 }

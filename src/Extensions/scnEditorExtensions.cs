@@ -24,7 +24,7 @@ internal static class scnEditorExtensions
             return;
         }
         RhythmFrameworkPlugin.Logger.LogInfo($"trying to instantiate: {eventType.FullName}");
-        if (editor.usingShowButton)
+        if (editor.filterMode)
         {
             if (RDEditorUtils.ControlIsPressed())
             {

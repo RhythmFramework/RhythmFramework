@@ -17,7 +17,7 @@ internal static class PauseModeContentArrowsPatch
         if (__instance.contentData.valueType == EnumExtensions.GetFromExtendedName<PauseContentValueType>("Custom"))
         {
             CustomPauseContentData contentData = (__instance.contentData as CustomPauseContentData)!;
-            __instance.valueText.text = contentData.SetStartValue(contentData.BaseOption.DefaultIndex);
+            __instance.valueText.text = contentData.SetStartValue(contentData.BaseOption.DefaultIndex, out var _);
         }
     }
 
@@ -29,7 +29,6 @@ internal static class PauseModeContentArrowsPatch
         
         if (__instance.contentData.valueType != EnumExtensions.GetFromExtendedName<PauseContentValueType>("Custom")) return;
         CustomPauseContentData contentData = (__instance.contentData as CustomPauseContentData)!;
-        __instance.valueText.text = contentData.ChangeValue(direction, shiftPressed);
-        if (contentData.changedValue) contentData.BaseOption.SetValue(contentData.currentIndex);
+        __instance.valueText.text = contentData.ChangeValue(direction, shiftPressed, out _);
     }
 }

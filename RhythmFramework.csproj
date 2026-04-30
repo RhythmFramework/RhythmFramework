@@ -31,7 +31,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.692" />
+    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.755" />
 	  <PackageReference Include="UnityEngine.Modules" Version="6000.0.5" IncludeAssets="compile" />
   </ItemGroup>
 
@@ -57,6 +57,7 @@
 
   <ItemGroup>
     <Folder Include="src\Modules\" />
+    <Folder Include="src\Patches\Pause\" />
   </ItemGroup>
 
   <Target Name="Copy" AfterTargets="Build" Condition="'$(RhythmDoctor)' != ''">

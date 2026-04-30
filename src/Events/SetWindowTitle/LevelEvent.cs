@@ -26,6 +26,6 @@ class LevelEvent_SetWindowTitle: CustomEvent
     public override string GetTooltipText() => WindowTitle;
 
     [JsonProperty("", "", null, "", false, true, null)]
-    [InputField(null, InputField.LineType.SingleLine, 100, 14, true, true, null)]
+    [InputField(null, InputField.LineType.SingleLine, 100, 14, true, true)]
     public string WindowTitle { get; set; } = "";
 }

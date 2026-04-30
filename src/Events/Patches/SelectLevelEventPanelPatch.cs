@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RhythmFramework.Events;
 using RhythmFramework.Extensions;
+using UnityEngine.Events;
 using static RhythmFramework.Utilities.RDBypasses;
 
 namespace RhythmFramework.Events.Patches;
@@ -43,12 +44,12 @@ class SelectLevelEventPanelAwakePatch
         {
             RhythmFrameworkPlugin.Logger.LogInfo($"Adjusting shortcut count...");
             int additionalItemsNeeded = allEvents.Count - tabSection.shortcuts.Length;
-            KeyCode[] newShortcuts = new KeyCode[allEvents.Count];
+            RDEditorKeycode[] newShortcuts = new RDEditorKeycode[allEvents.Count];
             Array.Copy(tabSection.shortcuts, newShortcuts, tabSection.shortcuts.Length);
             
             for (int i = tabSection.shortcuts.Length; i < newShortcuts.Length; i++)
             {
-                newShortcuts[i] = KeyCode.None;
+                newShortcuts[i] = new RDEditorKeycode { key = KeyCode.None};
             }
             
             // RhythmFrameworkPlugin.Logger.LogInfo($"New shortcuts array length: {newShortcuts.Length}");
@@ -62,7 +63,7 @@ class SelectLevelEventPanelAwakePatch
         }
         
         // Sort alphabetically. I always hated that it was just a garbled mess.
-        var eventsWithShortcuts = new List<(string eventStr, KeyCode shortcut)>();
+        var eventsWithShortcuts = new List<(string eventStr, RDEditorKeycode shortcut)>();
         for (int i = 0; i < allEvents.Count; i++)
         {
             eventsWithShortcuts.Add((allEvents[i], tabSection.shortcuts[i]));
@@ -70,7 +71,7 @@ class SelectLevelEventPanelAwakePatch
 
         eventsWithShortcuts.Sort((a, b) => string.CompareOrdinal(a.eventStr, b.eventStr));
         allEvents.Clear();
-        KeyCode[] sortedShortcuts = new KeyCode[eventsWithShortcuts.Count];
+        RDEditorKeycode[] sortedShortcuts = new RDEditorKeycode[eventsWithShortcuts.Count];
 
 
         foreach (var (eventStr, shortcut) in eventsWithShortcuts)
@@ -144,60 +145,32 @@ class SelectLevelEventPanelAwakePatch
         }
         RhythmFrameworkPlugin.Logger.LogInfo("c3");
         var hasCategories = BypassPrivateVariable(thisType, "hasCategories");
-        hasCategories.SetValue(__instance, false);
+        hasCategories.SetValue(__instance, __instance.categorySelect != null);
 
-        // I tried way too long to get the dropdown working, and now I give up.
-        // rhythm doctor and the stupid private stuff.
-
-        if (__instance.categorySelect != null)
-            __instance.categorySelect.SetActive(false);
+        if ((bool)hasCategories.GetValue(__instance))
+        {
+            var categorySelectDropdown = BypassPrivateVariable(thisType, "categorySelectDropdown");
+            Dropdown dropdownComponent = __instance.categorySelect.GetComponentInChildren<Dropdown>();
+            categorySelectDropdown.SetValue(__instance, dropdownComponent);
+            if (RDString.isCJK)
+            {
+                dropdownComponent.template.GetComponentInChildren<Text>().font = RDString.currentLanguageFont;
+                dropdownComponent.captionText.font = RDString.currentLanguageFont;
+            }
+            var categoriesForTabField = BypassPrivateVariable(thisType, "categoriesForTab", true);
+            var categoriesForTab = (Dictionary<Tab,RDLevelEditor.EventCategory[]>)categoriesForTabField.GetValue(null);
+            var currentCategoryField = BypassPrivateVariable(thisType, "currentCategory");
+            var categoryIdsField = BypassPrivateVariable(thisType, "categoryIds");
+            RDLevelEditor.EventCategory[] values = categoriesForTab[__instance.willDisplayLevelEventsFromTab];
+            categoryIdsField.SetValue(__instance, dropdownComponent.AddOptionsWithEnumArray(values, true));
+            dropdownComponent.onValueChanged.AddListener((UnityAction<int>)(_ =>
+            {
+                var categoryIds = (Dictionary<int, RDLevelEditor.EventCategory>)categoryIdsField.GetValue(null);
+                currentCategoryField.SetValue(__instance, categoryIds[dropdownComponent.value]);
+                __instance.OnEnable();
+            }));
+        }
         
-        // if ((bool)hasCategories.GetValue(__instance))
-        // {
-        //     var categorySelectDropdown = BypassPrivateVariable(thisType, "categorySelectDropdown");
-        //     Dropdown dropdownComponent = __instance.categorySelect.GetComponentInChildren<Dropdown>();
-        //     categorySelectDropdown.SetValue(__instance, dropdownComponent);
-        //     if (RDString.isCJK)
-        //     {
-        //         dropdownComponent.template.GetComponentInChildren<Text>().font = RDString.currentLanguageFont;
-        //         dropdownComponent.captionText.font = RDString.currentLanguageFont;
-        //     } 
-            
-        //     var categoriesForTabField = BypassPrivateVariable(thisType, "categoriesForTab", true);
-        //     var categoryIdsField = BypassPrivateVariable(thisType, "categoryIds");
-        //     var currentCategoryField = BypassPrivateVariable(thisType, "currentCategory");
-
-        //     RhythmFrameworkPlugin.Logger.LogInfo("test 1");
-        //     // Retrieve the values using reflection
-        //     var categoriesForTab = (Dictionary<object, Array>)categoriesForTabField.GetValue(null);
-        //     RhythmFrameworkPlugin.Logger.LogInfo("test 2");
-        //     var selectedTab = __instance.willDisplayLevelEventsFromTab;
-        //     var values = categoriesForTab[selectedTab];
-
-        //     // Map enum values to Dropdown.OptionData for dropdown options and dictionary for value mapping
-        //     List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
-        //     Dictionary<int, object> valueMapping = new Dictionary<int, object>();
-
-        //     for (int i = 0; i < values.Length; i++)
-        //     {
-        //         var enumValue = values.GetValue(i);
-        //         options.Add(new Dropdown.OptionData(enumValue.ToString()));
-        //         valueMapping[i] = enumValue;
-        //     }
-
-        //     // Populate dropdown with options
-        //     dropdownComponent.ClearOptions();
-        //     dropdownComponent.AddOptions(options);
-
-        //     // categoryIdsField.SetValue(__instance, valueMapping);
-
-        //     dropdownComponent.onValueChanged.AddListener(delegate(int p0)
-        //     {
-        //         // var dict = (Dictionary<int, object>)categoryIds.GetValue(__instance);
-        //         BypassPrivateVariable(thisType, "currentCategory").SetValue(__instance, valueMapping[dropdownComponent.value]);
-        //         __instance.OnEnable();
-        //     });
-        // }
         RhythmFrameworkPlugin.Logger.LogInfo("c4");
         var hasGridViewButton = BypassPrivateVariable(thisType, "hasGridViewButton");
 
@@ -222,7 +195,7 @@ class SelectLevelEventPanelAwakePatch
         // }
         RhythmFrameworkPlugin.Logger.LogInfo("c5");
         var hasRoomSelect = BypassPrivateVariable(thisType, "hasRoomSelect");
-        hasRoomSelect.SetValue(__instance, hasRoomSelect.GetValue(__instance) != null);
+        hasRoomSelect.SetValue(__instance, __instance.roomSelect != null);
         RhythmFrameworkPlugin.Logger.LogInfo("Ran custom SelectLevelEventPanel!");
         return false;
     }

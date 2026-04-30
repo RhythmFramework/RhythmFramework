@@ -6,11 +6,11 @@ using RhythmFramework.Options.Game;
 namespace RhythmFramework.Options.Patches;
 
 // ReSharper disable once InconsistentNaming
-[HarmonyPatch(typeof(RDPauseMenu))]
-internal static class RDPauseMenuPatch
+[HarmonyPatch(typeof(PauseMenu))]
+internal static class PauseMenuPatch
 {
-    [HarmonyPatch(typeof(RDPauseMenu), nameof(RDPauseMenu.UpdateLevelDetail)), HarmonyPostfix]
-    public static void UpdateDetailPostfix(RDPauseMenu __instance, string description, string value, bool showConfirmationText)
+    [HarmonyPatch(typeof(PauseMenu), nameof(PauseMenu.UpdateLevelDetail)), HarmonyPostfix]
+    public static void UpdateDetailPostfix(PauseMenu __instance, string description, string value, bool showConfirmationText)
     {
         if (!description.Contains("no key:")) return;
         

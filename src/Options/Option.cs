@@ -89,7 +89,7 @@ public class Option
     {
         Index = Values.IndexOf(value);
         if (Index.Value == -1) Index = DefaultIndex;
-        Value = value;
+        Value = Values[Index.Value];
         if (ChangeConsumer != null) ChangeConsumer(value.Value);
         return value.Value;
     }
@@ -102,7 +102,7 @@ public class Option
     /// <returns>If the passed index argument was out of bounds, it will return an int that is in bounds. Otherwise, just returns what was passed.</returns>
     public int SetValue(int index, bool triggerEvent = true)
     {
-        Index = EnforceIndexConstraint(index);
+        Index = index = EnforceIndexConstraint(index);
         Value = Values[index];
         if (triggerEvent && ChangeConsumer != null) ChangeConsumer(Value.Value);
         return Index.Value;
@@ -175,13 +175,13 @@ public class Option
             throw new ConstraintException($"Index fails constraint because no values exist! (Option={Key()})");
         if (index >= Values.Count)
         {
-            if (!throwError)
+            if (throwError)
                 throw new ConstraintException($"Index is greater than value count! ({index} >= {Values.Count})");
             index = 0;
         } 
         else if (index < 0)
         {
-            if (!throwError)
+            if (throwError)
                 throw new ConstraintException($"Index is less than zero! ({index} < 0)");
             index = Values.Count - 1;
         }
